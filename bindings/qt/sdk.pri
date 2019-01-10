@@ -345,7 +345,7 @@ win32 {
             include/mega/win32/megaconsole.h \
             include/mega/win32/megaconsolewaiter.h
 
-    SOURCES += bindings/qt/3rdparty/libs/sqlite3.c
+    SOURCES += $$MEGASDK_BASE_PATH/bindings/qt/3rdparty/libs/sqlite3.c
 }
 
 unix {
