@@ -176,15 +176,19 @@ IF(WIN32)
         ImportVcpkgLibrary(cares       "${vcpkg_dir}/include" "${vcpkg_dir}/debug/lib/cares.lib" "${vcpkg_dir}/lib/cares.lib")
     ENDIF()
 
-   IF(USE_OPENSSL) 
-       IF(USE_WEBRTC)
-           include_directories( "${WebRtcDir}/webrtc/src/third_party/boringssl/src/include" )
-       ELSE()
-          ImportVcpkgLibrary(ssl         "${vcpkg_dir}/include"  ${vcpkg_dir}/debug/lib/ssleay32.lib ${vcpkg_dir}/lib/ssleay32.lib)
-          ImportVcpkgLibrary(crypto      "${vcpkg_dir}/include" ${vcpkg_dir}/debug/lib/libeay32.lib ${vcpkg_dir}/lib/libeay32.lib)
-      ENDIF()
-  ENDIF()
-    
+    IF(USE_OPENSSL) 
+        IF(USE_WEBRTC)
+            include_directories( "${WebRtcDir}/webrtc/src/third_party/boringssl/src/include" )
+        ELSE()
+            ImportVcpkgLibrary(ssl         "${vcpkg_dir}/include"  ${vcpkg_dir}/debug/lib/ssleay32.lib ${vcpkg_dir}/lib/ssleay32.lib)
+            ImportVcpkgLibrary(crypto      "${vcpkg_dir}/include" ${vcpkg_dir}/debug/lib/libeay32.lib ${vcpkg_dir}/lib/libeay32.lib)
+        ENDIF()
+    ENDIF()
+
+    IF(USE_WEBRTC)
+        ImportVcpkgLibrary(webrtc "${WebRtcDir}/include" "${WebRtcDir}/lib/webrtc.lib" "${WebRtcDir}/lib/webrtc.lib")
+        add_definitions( -DWEBRTC_WIN )
+    ENDIF()
 
     ImportVcpkgLibrary(z               "${vcpkg_dir}/include" "${vcpkg_dir}/debug/lib/zlibd.lib" "${vcpkg_dir}/lib/zlib.lib") 
 
@@ -272,6 +276,11 @@ ELSE(WIN32)
     SET(Mega_PlatformSpecificIncludes ${MegaDir}/include/mega/posix)
     SET(Mega_PlatformSpecificLibs crypto pthread rt z dl termcap stdc++fs)
 
+    IF(USE_WEBRTC)
+        ImportVcpkgLibrary(webrtc "${WebRtcDir}/include" "${WebRtcDir}/lib/webrtc.lib" "${WebRtcDir}/lib/webrtc.lib")
+        add_definitions( -DWEBRTC_POSIX )
+    ENDIF()
+
 ENDIF(WIN32)
 
 configure_file ("${MegaDir}/contrib/cmake/config.h.in" "${MegaDir}/include/mega/config.h" )
@@ -330,6 +339,7 @@ target_link_libraries(Mega PUBLIC z
                 $<${USE_SODIUM}:sodium> 
                 $<$<AND:${USE_OPENSSL},$<NOT:${USE_WEBRTC}>>:ssl> 
                 $<$<AND:${USE_OPENSSL},$<NOT:${USE_WEBRTC}>>:crypto> 
+                $<${USE_WEBRTC}:webrtc> 
                 $<${USE_CURL}:curl>  
                 $<${USE_CURL}:cares> 
                 $<${USE_SQLITE}:sqlite3> 
